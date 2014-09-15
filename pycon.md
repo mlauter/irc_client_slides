@@ -29,19 +29,24 @@ Learn everything you need to know to go home and set up your own Smart AC; and w
 * What you'll need
 * Where to find good tutorials
 * Two very simple circuits
+
 ### Part II: Simple Flask server, 10 mins
 * A simple sqlite database
 * Intro to routes
 * Constructing the routes for UI and Pi
 * Representing the state of the AC
+
 ### Part III:  The program on the Pi, 8 mins
 * Important libraries (especially RPi.GPIO, Requests)
 * Making POST requests
 * Temperature control (how to write a thermostat)
 * Surviving server non-responsiveness
+
 ### Part IV: Demo, 2 mins
 * a video of my version of this project in action
+
 ### Questions, 5 mins
+
 #### Total 25 mins + 5 for questions
 
 ## Additional Notes
