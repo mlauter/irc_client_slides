@@ -8,7 +8,7 @@ Other
 
 ## Description
 <!-- ( 318/400 chars) -->
-Looking for a fun, useful Raspberry Pi project? Want to connect your household appliances to the internet? Come learn how to build your own 'smart' air conditioner using a Raspberry Pi, a bit of hardware, and, of course, python. Plus, you can both save energy and never have to come home to a sweltering bedroom again. 
+Looking for a fun, useful Raspberry Pi project? Want to connect your household appliances to the internet? Come learn how to build your own 'smart' air conditioner using a Raspberry Pi, a bit of hardware, and, of course, Python. Plus, you can save energy and never have to come home to a sweltering bedroom again. 
 
 ## Audience
 <!-- no idea what to put here -->
@@ -18,13 +18,13 @@ Anyone who still doesn't know what to do with their Raspberry Pi
 novice
 
 ## Objectives
-Learn everything you need to know to go home and set up your own Smart AC; and what's more, become familiar enough with these tools and python libraries to create your own awesome home-automation projects. 
+Learn everything you need to know to go home and set up your own Smart AC; and what's more, become familiar enough with these tools and Python libraries to create your own awesome home-automation projects. 
 
 ## Abstract
 
-What with the proliferation of device/applications for remotely controlling everything from your lights to your coffee maker, and with the release of HomeKit in iOS 8, it's clear that companies big and small are getting into the home-automation game. But why not do it yourself?
+What with the proliferation of device/applications for remotely controlling everything from your lights to your coffee maker, and with the release of HomeKit in iOS 8, it's clear that companies big and small are getting into the home-automation game. But why just not do it yourself?
 
-In this talk, I'll show you everything you need to know to turn your boring window-unit air conditioner into a wifi-enabled, remotely controllable smart-thermostat. With a couple components, a Raspberry Pi, and some handy python libraries, you'll not only have the tools to make yourself a Smart AC, you'll be able to execute other cool home-automation projects you've dreamed up. (I'm thinking an alarm for the morning that starts my coffee pot.)
+In this talk, I'll show you everything you need to know to turn your boring window-unit air conditioner into a wifi-enabled, remotely controllable smart-thermostat. With a couple components, a Raspberry Pi, and some handy Python libraries, you'll not only have the tools to make yourself a Smart AC, you'll be able to execute other cool home-automation projects you've dreamed up. (I'm thinking an alarm for the morning that starts my coffee pot.)
 
 You do not need to have any previous experience with Raspberry Pi or hardware projects. I'll go over the simple circuits you'll make, tips for debugging hardware, the libraries you'll need, and how to set up a simple flask server that will allow you to communiate with your device from your web browser. I'll wrap up the talk with pointers to some excellent resources and a quick video demo of my Smart AC in action.
 
