@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: 'Droid Serif';
+      }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: 400;
+        margin-bottom: 0;
+      }
+      .remark-slide-content h1 { font-size: 3em; }
+      .remark-slide-content h2 { font-size: 2em; }
+      .remark-slide-content h3 { font-size: 1.6em; }
+      .footnote {
+        position: absolute;
+        bottom: 3em;
+      }
+      li p { line-height: 1.25em; }
+      .red { color: #fa0000; }
+      .large { font-size: 2em; }
+      a, a > code {
+        color: rgb(249, 38, 114);
+        text-decoration: none;
+      }
+      code {
+        -moz-border-radius: 5px;
+        -web-border-radius: 5px;
+        background: #e7e8e2;
+        border-radius: 5px;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line-highlighted     { background-color: #373832; }
+      .pull-left {
+        float: left;
+        width: 47%;
+      }
+      .pull-right {
+        float: right;
+        width: 47%;
+      }
+      .pull-right ~ p {
+        clear: both;
+      }
+      #slideshow .slide .content code {
+        font-size: 0.8em;
+      }
+      #slideshow .slide .content pre code {
+        font-size: 0.9em;
+        padding: 15px;
+      }
+      .inverse {
+        background: #272822;
+        color: #777872;
+        text-shadow: 0 0 20px #333;
+      }
+      .inverse h1, .inverse h2 {
+        color: #f3f3f3;
+        line-height: 0.8em;
+      }
+
+      /* Slide-specific styling */
+      #slide-inverse .footnote {
+        bottom: 12px;
+        left: 20px;
+      }
+      #slide-how .slides {
+        font-size: 0.9em;
+        position: absolute;
+        top:  151px;
+        right: 140px;
+      }
+      #slide-how .slides h3 {
+        margin-top: 0.2em;
+      }
+      #slide-how .slides .first, #slide-how .slides .second {
+        padding: 1px 20px;
+        height: 90px;
+        width: 120px;
+        -moz-box-shadow: 0 0 10px #777;
+        -webkit-box-shadow: 0 0 10px #777;
+        box-shadow: 0 0 10px #777;
+      }
+      #slide-how .slides .first {
+        background: #fff;
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        z-index: 1;
+      }
+      #slide-how .slides .second {
+        position: relative;
+        background: #fff;
+        z-index: 0;
+      }
+      #logo1, #logo2, #logo3 {
+        display: inline;
+      }
+
+      /* Two-column layout */
+      .left-column {
+        color: #777;
+        width: 20%;
+        height: 92%;
+        float: left;
+      }
+        .left-column h2:last-of-type, .left-column h3:last-child {
+          color: #000;
+        }
+      .right-column {
+        width: 75%;
+        float: right;
+        padding-top: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle, inverse
+name: inverse
+layout: true
+---
+# Roll your own IRC client in python 
+---
+## Dipping a toe in the waters of asyncio
+---
+layout: false
+# Agenda
+
+1. Overview
+2. The IRC protocol
+3. asyncio.Protocol
+4. Event loops
+5. Demo
+
+---
+
+# Overview
+
+IRC = Internet Relay Chat
+
+**Client/Server** model: clients connect to servers which relay their messages to other clients
+
+Uses TCP (or TLS) 
+
+Group discussions happen in **channels**
+
+All users have **nick**names
+
+You can privately message someone using their nick
+
+There are a ton of great IRC clients out there:
+
+<div><div id="logo1"><img src="colloquy.png"></div> 
+    <div id="logo2"><img src="textual.png"></div>
+    <div id="logo3"><img src="limechat.png"></div></div>
+
+---
+
+# Overview
+
+**RFC** (Request for Comments): "the official documents of Internet specifications, communications protocols, procedures, and events", put out by the Internet Engineering Task Force (IETF)
+
+The internet is filled with protocols: SMTP, HTTP, FTP...
+
+IRC is one of them. Originally specified in [RFC 1459](http://www.irchelp.org/irchelp/rfc/rfc.html)
+
+From the protocol:
+
+>Servers and clients send each other messages 
+>which may or may not generate a reply. 
+>If the message contains a valid command, 
+>as described in later sections, the client 
+>should expect a reply as specified 
+>but it is not advised to wait forever for the reply; 
+>client to server and server to server communication 
+>**is essentially asynchronous in nature.**
+
+---
+
+# The IRC protocol
+
+How do we...
+
+1. Get connected
+2. Stay connected
+3. Send messages
+
+[RFC 1459, Chapter 4: Message details](http://www.irchelp.org/irchelp/rfc/chapter4.html)
+
+---
+
+# The IRC protocol: Get connected
+
+hostname: i.e. `irc.freenode.net`, port: `6667`
+
+1. Password message (optional)
+
+  ```PASS secretpasswordhere\r\n```
+2. Nick message
+
+  ```NICK yournick\r\n```
+3. User message
+
+  ```USER yournick 8 * :Real Name\r\n```.red.bold[*]
+
+.footnote[.red.bold[*] Don't worry about the two parameters after nick. 
+These are used for server to server communication. 
+The client can just put nonsense there.]
+---
+
+# The IRC protocol: Stay connected
+
+Play Ping Pong with the server.
+
+![](pingpong.gif)
+
+---
+
+# The IRC protocol: Stay connected
+
+server: `PING :orwell.freenode.net`
+
+you: `PONG :orwell.freenode.net`
+
+If you don't respond within a certain amount of time, the server will kill your connection :(
+
+---
+
+# The IRC protocol: Send messages
+
+If you're used to using IRC, you'll be familiar with sending messages like:
+
+* /join #python
+* /msg montyP Hey what's up!
+* /leave #python
+
+But, this isn't quite how the server wants the messages to look. Instead (keep in mind all messages need to end with `\r\n`):
+
+* `JOIN #python` : join a channel (#)
+* `JOIN #python,#pyladies` : join multiple channels (no space after the ,)
+* `PRIVMSG #python :python is so great!` :  message a channel
+* `PRIVMSG montyP :hi there!` : private message a person with nick montyP
+* `PART #python` : leave a channel
+
+Encode these messages as byte strings `'my message'.encode()`
+
+.footnote[.red.bold[*] Try out the messages with telnet to see how things work]
+
+---
+
+# The Problem
+
+We could set up a socket, connect to `irc.freenode.net` on port `6667`, and then just send these messages over the connection.
+
+But how can we both listen for user input at the command line *and* listen for and respond to server PINGs at the same time?
+
+---
+
+# asyncio
+
+New in python 3.4!
+
+Jesse Davis at PyCon 2014: [What Is Async, How Does It Work, & When Should I Use It?](http://emptysqua.re/blog/pycon-2014-video-what-is-async/)
+
+(how about now?)
+
+![](asynciodocs.png)
+
+---
+
+# asyncio
+
+asyncio has some built in **protocols** for which clients and servers have already been implemented (like HTTP) but also a general Protocol object.
+
+A protocol works in conjunction with a **transport** (an abstraction for a socket or something like it)
+
+**transport** : concerned with how to send the bytes
+**protocol** : concerned with which bytes to send
+
+---
+
+# asyncio: The Plan
+
+1. create an 'event loop'
+2. make a connection on that loop to an IRC server using the IRC protocol
+3. once we've made a connection, get another loop going that listens for user input on the command line
+4. run forever (or until we disconnect)
+
+---
+
+# asyncio: Event loop
+
+```python
+loop = asyncio.get_event_loop()
+```
+
+## Create a connection
+
+from the docs:
+```python
+BaseEventLoop.create_connection(protocol_factory, 
+              host=None, port=None, *, ssl=None, 
+              family=0, proto=0, flags=0, sock=None, 
+              local_addr=None, server_hostname=None)
+```
+
+`host = 'irc.freenode.net'`
+`port = 6667`
+
+protocol_factory ??? 
+
+`create_connection` will return a `(transport, protocol)` pair upon successful connection
+
+---
+
+# Protocol Factory
+
+Some kind of callable. It could be an already-instantiated protocol instance, or it could be a class.
+
+Let's write an IRC Protocol class.
+
+---
+
+# asyncio.Protocol
+
+To get our IRC Protocol going we only have to write four methods (plus an `__init__`)
+
+bare minimum to get a Protocol object to work:
+
+`connection_made`<br>
+`data_received`<br>
+`connection_lost`<br>
+
+additional:
+
+`user_input`
+
+---
+
+# asyncio.Protocol
+## init
+
+```python
+class IRCProtocol(asyncio.Protocol):
+
+    def __init__(self,*args,**kwargs):
+        self.buffer = ''
+        super().__init__(*args,**kwargs)
+```
+
+## connection lost
+```python
+    def connection_lost(self, exc):
+        print("Connection lost!!")
+```
+---
+
+# asyncio.Protocol
+## connection made
+This method will be called when a connection is made. It takes a transport object (remember that `create_connection` returns one).
+
+```python
+    def connection_made(self, trans):
+        self.trans = trans
+```
+
+Now we want to send our Nick and User messages to connect
+```python
+        trans.write(str.encode('NICK cLannister \r\n'))
+        trans.write(str.encode('USER cLannister 8 * :Cersei Lannister\r\n'))
+        print("I connected") # let us know that we're in
+```
+
+Finally, we want to start a new loop to listen for user input. We'll use `get_event_loop`, and then a method called `add_reader`, to listen for command line input. If input is received, call our protocol's `user input` method.
+```python
+        loop = asyncio.get_event_loop()
+        loop.add_reader(sys.stdin, self.user_input) #make sure to import sys
+```
+---
+
+# User input
+
+Most clients will do something more complex. They make the user input a little friendlier, then parse it to turn it into the proper sytax specified for the protocol. For simplicity, let's just tack the newline onto whatever the user types, encode, and write it to the transport.
+
+```python
+    def user_input(self):
+        user_msg = sys.stdin.readline()+'\r\n'
+        self.trans.write(user_msg.encode())
+```
+---
+# Data Received
+
+This will get called whenever data is received.
+
+Remember how we created `self.buffer` in the init?
+
+Here's what we'll do:
+1. Decode whatever data we receive, and write it into the buffer. 
+2. Split the buffer on newlines (`'\r\n`)
+  if the last item is not an empty string, then we didn't get a complete line.
+3. Leave the part that didn't end with `'\r\n'` in the buffer.
+4. Print the lines out to the terminal, and check each one for `'PING'`
+5. if `'PING`, then `'PONG`
+
+---
+# Data Received
+
+```python
+    def data_received(self, data):
+        self.buffer = self.buffer + data.decode() #write new data to buffer
+        *lines, self.buffer = self.buffer.split('\r\n') #cool new python3 syntax!
+
+        for data in lines:
+            data = data.strip()
+
+            if data == '':
+                continue
+            print(data)
+
+            if data.find('PING') != -1:  #Ping pong!
+                self.trans.write(str.encode('PONG %s' % data[5:]))
+                print('PONG %s' % data[5:])
+```
+---
+# Wrapping up
+
+Recall: we decided we would call `get_event_loop` and then use the `create_connection` method:
+
+```python
+loop = asyncio.get_event_loop()
+coro = loop.create_connection(IRCProtocol, host="irc.freenode.net", port=6667)
+```
+
+We call `run_unti_complete` with the `coro` (coroutine) from `create_connection`:
+```python
+loop.run_until_complete(coro)
+```
+Then we run forever
+```python
+try:
+    loop.run_forever()
+finally:
+    loop.close()
+```
+
+---
+
+class: center, middle, inverse
+name: inverse
+layout: true
+---
+# Demo time!
+
+
+    </textarea>
+    <script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
